@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayrollOS — Configuración</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --ink: #0d0d0d; --paper: #f5f0e8; --accent: #c8462b; --green: #2a7a4b; --muted: #7a7065; --border: #d4cfc6; --white: #fefefe; --sidebar: #111; }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; }
+
+  .sidebar { width: 240px; background: var(--sidebar); color: var(--paper); display: flex; flex-direction: column; padding: 2rem 0; position: fixed; height: 100vh; z-index: 100; }
+  .sidebar-brand { padding: 0 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-brand-tag { font-size: 0.55rem; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; }
+  .sidebar-brand-name { font-family: 'DM Serif Display', serif; font-size: 1.6rem; line-height: 1.1; margin-top: 0.25rem; }
+  .sidebar-nav { flex: 1; padding: 1.5rem 0; }
+  .nav-section { font-size: 0.55rem; letter-spacing: 0.2em; color: rgba(245,240,232,0.3); text-transform: uppercase; padding: 0.5rem 1.5rem; margin-top: 1rem; }
+  .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1.5rem; font-size: 0.75rem; color: rgba(245,240,232,0.6); text-decoration: none; transition: background 0.15s, color 0.15s; letter-spacing: 0.05em; }
+  .nav-item:hover, .nav-item.active { background: rgba(245,240,232,0.07); color: var(--paper); }
+  .nav-item.active { border-left: 2px solid var(--accent); }
+  .nav-icon { font-size: 0.9rem; width: 16px; text-align: center; }
+  .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .user-info { font-size: 0.65rem; color: rgba(245,240,232,0.4); margin-bottom: 0.75rem; }
+  .btn-logout { display: block; padding: 0.5rem 1rem; background: rgba(200,70,43,0.15); border: 1px solid rgba(200,70,43,0.3); color: var(--accent); font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center; }
+  .btn-logout:hover { background: rgba(200,70,43,0.3); }
+
+  .main { margin-left: 240px; flex: 1; padding: 3rem; max-width: 800px; }
+  .page-header { margin-bottom: 2.5rem; }
+  .page-tag { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 2.5rem; line-height: 1; }
+  .page-title em { font-style: italic; color: var(--accent); }
+
+  .flash { padding: 0.75rem 1rem; background: #e6f5ec; border-left: 3px solid var(--green); font-size: 0.75rem; color: var(--green); margin-bottom: 1.5rem; }
+
+  .card { background: var(--white); border: 1px solid var(--border); padding: 2.5rem; margin-bottom: 1.5rem; }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin-bottom: 0.4rem; }
+  .card-desc { font-size: 0.7rem; color: var(--muted); margin-bottom: 2rem; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+  .field { margin-bottom: 1.25rem; }
+  label { display: block; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  input, textarea { width: 100%; padding: 0.65rem 0.85rem; background: var(--paper); border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--ink); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  input:focus, textarea:focus { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+  textarea { resize: vertical; min-height: 120px; }
+
+  .hint { font-size: 0.65rem; color: var(--muted); margin-top: 0.35rem; }
+
+  .btn { padding: 0.9rem 2rem; background: var(--ink); color: var(--paper); border: none; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--accent); }
+
+  .info-box { background: #fdf8f0; border: 1px solid #e8d9b0; padding: 1rem 1.25rem; font-size: 0.7rem; color: #8a6b30; line-height: 1.6; }
+  .info-box strong { display: block; margin-bottom: 0.25rem; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <p class="sidebar-brand-tag">PayrollOS</p>
+    <p class="sidebar-brand-name">RRHH<br>Panel</p>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-section">Principal</p>
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+      <span class="nav-icon">◈</span> Dashboard
+    </a>
+    <p class="nav-section">Gestión</p>
+    <a href="{{ url_for('recipients') }}" class="nav-item">
+      <span class="nav-icon">◇</span> Trabajadores
+    </a>
+    <a href="{{ url_for('settings') }}" class="nav-item active">
+      <span class="nav-icon">◎</span> Configuración Email
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <p class="user-info">● ADMIN activo</p>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Cerrar Sesión</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <p class="page-tag">Configuración del Sistema</p>
+    <h1 class="page-title">Config. de<br><em>Correo SMTP</em></h1>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for m in messages %}
+    <div class="flash">✓ {{ m }}</div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <div class="info-box" style="margin-bottom: 1.5rem;">
+    <strong>⚠ Seguridad Gmail</strong>
+    Si usas Gmail, activa "Verificación en 2 pasos" y genera una "Contraseña de aplicación" en: Cuenta Google → Seguridad → Contraseñas de aplicaciones. Usa esa contraseña aquí, no tu contraseña normal.
+  </div>
+
+  <form method="POST">
+    <div class="card">
+      <h2 class="card-title">Servidor de Correo</h2>
+      <p class="card-desc">Configuración SMTP para el envío de liquidaciones</p>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Servidor SMTP</label>
+          <input type="text" name="smtp_server" value="{{ config.smtp_server }}" required>
+          <p class="hint">Gmail: smtp.gmail.com / Outlook: smtp.office365.com</p>
+        </div>
+        <div class="field">
+          <label>Puerto SMTP</label>
+          <input type="number" name="smtp_port" value="{{ config.smtp_port }}" required>
+          <p class="hint">Normalmente 587 (TLS) o 465 (SSL)</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Correo Remitente</label>
+        <input type="email" name="email" value="{{ config.email }}" required placeholder="rrhh@empresa.com">
+      </div>
+
+      <div class="field">
+        <label>Contraseña / Contraseña de Aplicación</label>
+        <input type="password" name="password" placeholder="Dejar vacío para no cambiar">
+        <p class="hint">La contraseña actual se mantiene si dejas este campo vacío</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Contenido del Correo</h2>
+      <p class="card-desc">Asunto y mensaje para cada liquidación enviada</p>
+
+      <div class="field">
+        <label>Asunto del Correo</label>
+        <input type="text" name="subject" value="{{ config.subject }}" required>
+      </div>
+
+      <div class="field">
+        <label>Cuerpo del Mensaje</label>
+        <textarea name="body">{{ config.body }}</textarea>
+        <p class="hint">El nombre del trabajador se incluye automáticamente en el saludo</p>
+      </div>
+    </div>
+
+    <button type="submit" class="btn">Guardar Configuración →</button>
+  </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayrollOS — Trabajadores</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --ink: #0d0d0d; --paper: #f5f0e8; --accent: #c8462b; --green: #2a7a4b; --muted: #7a7065; --border: #d4cfc6; --white: #fefefe; --sidebar: #111; }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; }
+
+  .sidebar { width: 240px; background: var(--sidebar); color: var(--paper); display: flex; flex-direction: column; padding: 2rem 0; position: fixed; height: 100vh; z-index: 100; }
+  .sidebar-brand { padding: 0 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-brand-tag { font-size: 0.55rem; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; }
+  .sidebar-brand-name { font-family: 'DM Serif Display', serif; font-size: 1.6rem; line-height: 1.1; margin-top: 0.25rem; }
+  .sidebar-nav { flex: 1; padding: 1.5rem 0; }
+  .nav-section { font-size: 0.55rem; letter-spacing: 0.2em; color: rgba(245,240,232,0.3); text-transform: uppercase; padding: 0.5rem 1.5rem; margin-top: 1rem; }
+  .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1.5rem; font-size: 0.75rem; color: rgba(245,240,232,0.6); text-decoration: none; transition: background 0.15s, color 0.15s; letter-spacing: 0.05em; }
+  .nav-item:hover, .nav-item.active { background: rgba(245,240,232,0.07); color: var(--paper); }
+  .nav-item.active { border-left: 2px solid var(--accent); }
+  .nav-icon { font-size: 0.9rem; width: 16px; text-align: center; }
+  .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .user-info { font-size: 0.65rem; color: rgba(245,240,232,0.4); margin-bottom: 0.75rem; }
+  .btn-logout { display: block; padding: 0.5rem 1rem; background: rgba(200,70,43,0.15); border: 1px solid rgba(200,70,43,0.3); color: var(--accent); font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center; transition: background 0.15s; }
+  .btn-logout:hover { background: rgba(200,70,43,0.3); }
+
+  .main { margin-left: 240px; flex: 1; padding: 3rem; }
+  .page-header { margin-bottom: 2.5rem; }
+  .page-tag { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 2.5rem; line-height: 1; }
+  .page-title em { font-style: italic; color: var(--accent); }
+
+  .flash { padding: 0.75rem 1rem; background: #e6f5ec; border-left: 3px solid var(--green); font-size: 0.75rem; color: var(--green); margin-bottom: 1.5rem; }
+
+  .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start; }
+
+  .card { background: var(--white); border: 1px solid var(--border); padding: 2rem; }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 1.2rem; margin-bottom: 1.5rem; }
+
+  .field { margin-bottom: 1.25rem; }
+  label { display: block; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  input[type="text"], input[type="email"], input[type="number"] {
+    width: 100%; padding: 0.65rem 0.85rem; background: var(--paper); border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--ink); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+
+  .btn { padding: 0.75rem 1.25rem; background: var(--ink); color: var(--paper); border: none; font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; width: 100%; }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--accent); }
+
+  .btn-secondary { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+  .btn-secondary:hover { box-shadow: 3px 3px 0 var(--ink); }
+
+  .csv-hint { font-size: 0.65rem; color: var(--muted); margin-top: 0.5rem; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+  th { text-align: left; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 0.75rem; border-bottom: 2px solid var(--border); }
+  td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--paper); }
+
+  .page-badge { display: inline-block; background: var(--ink); color: var(--paper); padding: 0.15rem 0.5rem; font-size: 0.65rem; }
+  .btn-del { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.5rem; font-family: 'DM Mono', monospace; font-size: 0.65rem; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+  .btn-del:hover { border-color: var(--accent); color: var(--accent); }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.8rem; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  input[type="file"] { padding: 0.5rem; background: var(--paper); border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 0.75rem; width: 100%; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <p class="sidebar-brand-tag">PayrollOS</p>
+    <p class="sidebar-brand-name">RRHH<br>Panel</p>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-section">Principal</p>
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+      <span class="nav-icon">◈</span> Dashboard
+    </a>
+    <p class="nav-section">Gestión</p>
+    <a href="{{ url_for('recipients') }}" class="nav-item active">
+      <span class="nav-icon">◇</span> Trabajadores
+    </a>
+    <a href="{{ url_for('settings') }}" class="nav-item">
+      <span class="nav-icon">◎</span> Configuración Email
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <p class="user-info">● ADMIN activo</p>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Cerrar Sesión</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <p class="page-tag">Gestión de Personal</p>
+    <h1 class="page-title">Lista de<br><em>Trabajadores</em></h1>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for m in messages %}
+    <div class="flash">{{ m }}</div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <div class="grid">
+    <!-- Left: Add form -->
+    <div>
+      <div class="card">
+        <h2 class="card-title">Agregar Trabajador</h2>
+        <form method="POST">
+          <input type="hidden" name="action" value="add">
+          <div class="field">
+            <label>Nombre Completo</label>
+            <input type="text" name="name" required placeholder="Juan Pérez">
+          </div>
+          <div class="field">
+            <label>Correo Electrónico</label>
+            <input type="email" name="email" required placeholder="juan@empresa.com">
+          </div>
+          <div class="field">
+            <label>Número de Página en PDF</label>
+            <input type="number" name="page" required min="1" placeholder="1">
+          </div>
+          <button type="submit" class="btn">+ Agregar Trabajador</button>
+        </form>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem;">
+        <h2 class="card-title">Importar CSV</h2>
+        <form method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="import_csv">
+          <div class="field">
+            <label>Archivo CSV</label>
+            <input type="file" name="csv_file" accept=".csv" required>
+          </div>
+          <p class="csv-hint">Formato: nombre, email, pagina (primera fila = encabezado)</p>
+          <button type="submit" class="btn btn-secondary" style="margin-top: 1rem;">Importar CSV</button>
+        </form>
+        <a href="/download-csv-template" style="display:block;margin-top:0.75rem;font-size:0.65rem;color:var(--muted);text-decoration:none;">↓ Descargar plantilla CSV</a>
+      </div>
+    </div>
+
+    <!-- Right: Table -->
+    <div class="card">
+      <h2 class="card-title">Trabajadores Registrados ({{ recipients|length }})</h2>
+      {% if recipients %}
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Página</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recipients %}
+          <tr>
+            <td style="color:var(--muted)">{{ loop.index }}</td>
+            <td>{{ r.name }}</td>
+            <td style="color:var(--muted)">{{ r.email }}</td>
+            <td><span class="page-badge">p.{{ r.page }}</span></td>
+            <td>
+              <form method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar a {{ r.name }}?')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="index" value="{{ loop.index0 }}">
+                <button type="submit" class="btn-del">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">No hay trabajadores. Agrega el primero.</div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+</body>
+</html>

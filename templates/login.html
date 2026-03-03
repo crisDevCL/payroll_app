@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayrollOS — Acceso</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --accent: #c8462b;
+    --muted: #7a7065;
+    --border: #d4cfc6;
+    --white: #fefefe;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, var(--border) 39px, var(--border) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, var(--border) 39px, var(--border) 40px);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  /* Decorative corner marks */
+  body::after {
+    content: 'PAYROLL OS v2.4';
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    opacity: 0.5;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: min(900px, 95vw);
+    background: var(--white);
+    border: 1px solid var(--border);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+
+  /* Left panel */
+  .left-panel {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 4rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 300px;
+    height: 300px;
+    border: 60px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0.15;
+  }
+
+  .left-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    left: -20%;
+    width: 200px;
+    height: 200px;
+    background: var(--accent);
+    opacity: 0.08;
+    transform: rotate(45deg);
+  }
+
+  .brand {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .brand-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.5rem;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .brand-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .brand-sub {
+    font-size: 0.75rem;
+    color: rgba(245,240,232,0.5);
+    line-height: 1.6;
+    margin-top: 1.5rem;
+    max-width: 220px;
+  }
+
+  .left-features {
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(245,240,232,0.1);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: rgba(245,240,232,0.6);
+  }
+
+  .feature-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Right panel */
+  .right-panel {
+    padding: 4rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .form-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .form-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--ink);
+  }
+
+  .field {
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 1rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-login:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  .btn-login:active {
+    transform: translate(0, 0);
+    box-shadow: none;
+  }
+
+  .error-msg {
+    background: #fde8e5;
+    border-left: 3px solid var(--accent);
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .secure-note {
+    margin-top: 2rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .secure-note::before {
+    content: '⬛';
+    font-size: 0.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .container { grid-template-columns: 1fr; }
+    .left-panel { padding: 2.5rem 2rem; }
+    .right-panel { padding: 2.5rem 2rem; }
+    .brand-title { font-size: 2.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="left-panel">
+    <div class="brand">
+      <p class="brand-tag">Sistema de Gestión</p>
+      <h1 class="brand-title">Pay<br><em>Roll</em><br>OS</h1>
+      <p class="brand-sub">Plataforma segura para la distribución de liquidaciones de sueldo empresarial.</p>
+    </div>
+    <div class="left-features">
+      <div class="feature-item"><span class="feature-dot"></span>Separación automática por trabajador</div>
+      <div class="feature-item"><span class="feature-dot"></span>Envío masivo de correos cifrados</div>
+      <div class="feature-item"><span class="feature-dot"></span>Gestión de destinatarios</div>
+      <div class="feature-item"><span class="feature-dot"></span>Acceso restringido y seguro</div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="form-header">
+      <p class="form-tag">Acceso Restringido</p>
+      <h2 class="form-title">Iniciar<br>Sesión</h2>
+    </div>
+
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="field">
+        <label>Usuario</label>
+        <input type="text" name="username" autocomplete="username" required placeholder="administrador">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" name="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-login">Ingresar al Sistema →</button>
+    </form>
+
+    <p class="secure-note">Solo personal autorizado de RRHH puede acceder.</p>
+  </div>
+</div>
+
+</body>
+</html>

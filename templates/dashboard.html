@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayrollOS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --accent: #c8462b;
+    --green: #2a7a4b;
+    --muted: #7a7065;
+    --border: #d4cfc6;
+    --white: #fefefe;
+    --sidebar: #111;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    background: var(--sidebar);
+    color: var(--paper);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 0;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 0 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-brand-tag {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .sidebar-brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    line-height: 1.1;
+    margin-top: 0.25rem;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 1.5rem 0;
+  }
+
+  .nav-section {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: rgba(245,240,232,0.3);
+    text-transform: uppercase;
+    padding: 0.5rem 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.75rem;
+    color: rgba(245,240,232,0.6);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    background: rgba(245,240,232,0.07);
+    color: var(--paper);
+  }
+
+  .nav-item.active {
+    border-left: 2px solid var(--accent);
+  }
+
+  .nav-icon { font-size: 0.9rem; width: 16px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .user-info {
+    font-size: 0.65rem;
+    color: rgba(245,240,232,0.4);
+    margin-bottom: 0.75rem;
+  }
+
+  .btn-logout {
+    display: block;
+    padding: 0.5rem 1rem;
+    background: rgba(200,70,43,0.15);
+    border: 1px solid rgba(200,70,43,0.3);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.15s;
+  }
+
+  .btn-logout:hover { background: rgba(200,70,43,0.3); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    padding: 3rem;
+    max-width: calc(100vw - 240px);
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .page-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  .page-title em { font-style: italic; color: var(--accent); }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+
+  /* Upload zone */
+  .upload-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--ink);
+    background: var(--paper);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .drop-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .drop-text strong {
+    color: var(--ink);
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .file-selected {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .file-selected.show { display: flex; }
+
+  .file-icon { color: var(--accent); }
+
+  /* Process btn */
+  .btn-process {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 1.1rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .btn-process:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  .btn-process:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Progress */
+  .progress-section {
+    display: none;
+    margin-top: 1.5rem;
+  }
+
+  .progress-section.show { display: block; }
+
+  .progress-bar-wrap {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    height: 6px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+
+  /* Results */
+  .results-section {
+    display: none;
+    margin-top: 2rem;
+  }
+
+  .results-section.show { display: block; }
+
+  .result-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-pill {
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    background: var(--white);
+  }
+
+  .result-pill.success { border-color: var(--green); background: #f0faf4; }
+  .result-pill.error { border-color: var(--accent); background: #fef2f0; }
+
+  .result-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    display: block;
+  }
+
+  .result-pill.success .result-num { color: var(--green); }
+  .result-pill.error .result-num { color: var(--accent); }
+
+  .result-desc {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  .result-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+  }
+
+  .result-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 1rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.72rem;
+    align-items: center;
+  }
+
+  .result-row:last-child { border-bottom: none; }
+  .result-row:nth-child(even) { background: var(--paper); }
+
+  .status-badge {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .status-badge.sent { background: #e6f5ec; color: var(--green); }
+  .status-badge.error { background: #fde8e5; color: var(--accent); }
+
+  /* Recipients preview */
+  .recipients-preview {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 2rem 2.5rem;
+  }
+
+  .recip-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.72rem;
+  }
+
+  .recip-table th {
+    text-align: left;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .recip-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+  }
+
+  .recip-table tr:last-child td { border-bottom: none; }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .empty-state a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(245,240,232,0.3);
+    border-top-color: var(--paper);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner.show { display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <p class="sidebar-brand-tag">PayrollOS</p>
+    <p class="sidebar-brand-name">RRHH<br>Panel</p>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-section">Principal</p>
+    <a href="{{ url_for('dashboard') }}" class="nav-item active">
+      <span class="nav-icon">◈</span> Dashboard
+    </a>
+    <p class="nav-section">Gestión</p>
+    <a href="{{ url_for('recipients') }}" class="nav-item">
+      <span class="nav-icon">◇</span> Trabajadores
+    </a>
+    <a href="{{ url_for('settings') }}" class="nav-item">
+      <span class="nav-icon">◎</span> Configuración Email
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <p class="user-info">● ADMIN activo</p>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Cerrar Sesión</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div>
+      <p class="page-tag">Gestión de Nómina</p>
+      <h1 class="page-title">Distribución de<br><em>Liquidaciones</em></h1>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-number">{{ recipients|length }}</div>
+      <div class="stat-label">Trabajadores Registrados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="lastPages">—</div>
+      <div class="stat-label">Páginas Procesadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="lastSent">—</div>
+      <div class="stat-label">Correos Enviados</div>
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <h2 class="section-title">
+      Cargar Nómina PDF
+      <span class="section-badge">Nuevo proceso</span>
+    </h2>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" accept=".pdf" id="pdfInput">
+      <span class="drop-icon">⬡</span>
+      <div class="drop-text">
+        <strong>Arrastra el PDF aquí o haz clic para seleccionar</strong>
+        Archivo de nómina con todas las liquidaciones — máx. 50MB
+      </div>
+    </div>
+
+    <div class="file-selected" id="fileSelected">
+      <span class="file-icon">▣</span>
+      <span id="fileName">—</span>
+    </div>
+
+    <button class="btn-process" id="btnProcess" disabled onclick="processPDF()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">Separar y Enviar Liquidaciones →</span>
+    </button>
+
+    <div class="progress-section" id="progressSection">
+      <p class="progress-label" id="progressLabel">Procesando...</p>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <h2 class="section-title">Resultado del Envío</h2>
+    <div class="result-summary">
+      <div class="result-pill">
+        <span class="result-num" id="resPagesCount">0</span>
+        <p class="result-desc">Páginas separadas</p>
+      </div>
+      <div class="result-pill success">
+        <span class="result-num" id="resSentCount">0</span>
+        <p class="result-desc">Correos enviados</p>
+      </div>
+      <div class="result-pill error">
+        <span class="result-num" id="resErrCount">0</span>
+        <p class="result-desc">Con errores</p>
+      </div>
+    </div>
+    <div class="result-list" id="resultList"></div>
+  </div>
+
+  <div class="recipients-preview">
+    <h2 class="section-title">Trabajadores Configurados</h2>
+    {% if recipients %}
+    <table class="recip-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Correo Electrónico</th>
+          <th>Página PDF</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recipients %}
+        <tr>
+          <td>{{ r.name }}</td>
+          <td>{{ r.email }}</td>
+          <td>{{ r.page }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      No hay trabajadores registrados.<br>
+      <a href="{{ url_for('recipients') }}">→ Agregar trabajadores aquí</a>
+    </div>
+    {% endif %}
+  </div>
+</main>
+
+<script>
+const pdfInput = document.getElementById('pdfInput');
+const dropZone = document.getElementById('dropZone');
+const fileSelected = document.getElementById('fileSelected');
+const fileName = document.getElementById('fileName');
+const btnProcess = document.getElementById('btnProcess');
+const spinner = document.getElementById('spinner');
+const btnText = document.getElementById('btnText');
+const progressSection = document.getElementById('progressSection');
+const progressBar = document.getElementById('progressBar');
+const progressLabel = document.getElementById('progressLabel');
+const resultsSection = document.getElementById('resultsSection');
+
+pdfInput.addEventListener('change', () => {
+  if (pdfInput.files[0]) {
+    fileName.textContent = pdfInput.files[0].name;
+    fileSelected.classList.add('show');
+    btnProcess.disabled = false;
+  }
+});
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') {
+    pdfInput.files = e.dataTransfer.files;
+    fileName.textContent = file.name;
+    fileSelected.classList.add('show');
+    btnProcess.disabled = false;
+  }
+});
+
+async function processPDF() {
+  const file = pdfInput.files[0];
+  if (!file) return;
+
+  btnProcess.disabled = true;
+  spinner.classList.add('show');
+  btnText.textContent = 'Procesando...';
+  progressSection.classList.add('show');
+  progressLabel.textContent = 'Separando páginas del PDF...';
+  progressBar.style.width = '30%';
+
+  const formData = new FormData();
+  formData.append('pdf_file', file);
+
+  try {
+    progressLabel.textContent = 'Enviando correos electrónicos...';
+    progressBar.style.width = '70%';
+
+    const resp = await fetch('/process', { method: 'POST', body: formData });
+    const data = await resp.json();
+
+    progressBar.style.width = '100%';
+    progressLabel.textContent = 'Proceso completado.';
+
+    document.getElementById('resPagesCount').textContent = data.total_pages || 0;
+    document.getElementById('resSentCount').textContent = data.results ? data.results.length : 0;
+    document.getElementById('resErrCount').textContent = data.errors ? data.errors.length : 0;
+    document.getElementById('lastPages').textContent = data.total_pages || '—';
+    document.getElementById('lastSent').textContent = data.results ? data.results.length : '—';
+
+    const resultList = document.getElementById('resultList');
+    resultList.innerHTML = '';
+    const allRows = [...(data.results || []), ...(data.errors || [])];
+    allRows.forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      const sent = r.status === 'enviado';
+      row.innerHTML = `
+        <span>${r.name || '—'}</span>
+        <span>${r.email || r.error || '—'}</span>
+        <span class="status-badge ${sent ? 'sent' : 'error'}">${r.status || 'error'}</span>
+      `;
+      resultList.appendChild(row);
+    });
+
+    resultsSection.classList.add('show');
+  } catch (err) {
+    progressLabel.textContent = 'Error: ' + err.message;
+  } finally {
+    spinner.classList.remove('show');
+    btnText.textContent = 'Separar y Enviar Liquidaciones →';
+    btnProcess.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
