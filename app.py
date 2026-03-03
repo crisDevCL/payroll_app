@@ -17,8 +17,8 @@ app.config['OUTPUT_FOLDER'] = 'output'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
 
 # Admin credentials
-ADMIN_USER = 'admin'
-ADMIN_PASS = 'admin123'
+ADMIN_USER = 'cristian_admin'
+ADMIN_PASS = '$Cris.dev.2026#'
 
 # Email config file
 CONFIG_FILE = 'email_config.json'
